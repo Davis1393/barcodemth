@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Código de Barras</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4090/4090414.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://cdn-icons-png.flaticon.com/512/4090/4090414.png" type="image/x-icon">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #ffffff;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 40px 10px rgba(0, 0, 0, 0.1);
+            width: 700px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-container, .barcode-container {
+            width: 48%;
+        }
+        h1 {
+            font-size: 1.5rem;
+            color: #333;
+            text-align: center;
+        }
+        label {
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .barcode-container {
+            text-align: center;
+        }
+        .barcode-container img {
+            margin-top: 10px;
+            height: 60px;
+        }
+        .btn {
+            display: block;
+            margin: 10px auto;
+            padding: 8px 12px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Formulario -->
+    <div class="form-container">
+        <h1>Generador Código de Barras</h1>
+        <form id="barcodeForm">
+            <label for="descripcion">Descripción del Producto:</label>
+            <input type="text" id="descripcion" name="descripcion" placeholder="Ej. Producto X" required>
+
+            <label for="modelo">Modelo:</label>
+            <input type="text" id="modelo" name="modelo" placeholder="Ej. 1234" required>
+
+            <label for="marca">Marca:</label>
+            <input type="text" id="marca" name="marca" placeholder="Ej. ABC" required>
+
+            <button type="submit">Generar Código</button>
+        </form>
+    </div>
+
+    <!-- Sección del Código de Barras -->
+    <div class="barcode-container">
+        <h1>Código Generado</h1>
+        <div id="barcode-area">
+            <p id="codigo-text"></p>
+            <img id="barcode-img" src="" alt="Código de Barras" style="display:none;">
+        </div>
+        <a id="download-btn" class="btn" href="#" download disabled>Descargar</a>
+        <button class="btn" onclick="imprimir()" id="print-btn" disabled>Imprimir</button>
+    </div>
+</div>
+
+<script>
+    document.getElementById('barcodeForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Evita que la página se recargue
+
+        let formData = new FormData(this);
+
+        fetch('generate_barcode.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                document.getElementById('codigo-text').innerHTML = 'Código EAN-13: <strong>' + data.codigoEAN13 + '</strong>';
+                document.getElementById('barcode-img').src = "data:image/png;base64," + data.barcodeBase64;
+                document.getElementById('barcode-img').style.display = 'block';
+
+                let downloadBtn = document.getElementById('download-btn');
+                downloadBtn.href = "data:image/png;base64," + data.barcodeBase64;
+                downloadBtn.download = "barcode_" + data.codigoEAN13 + ".png";
+                downloadBtn.style.display = 'block';
+
+                document.getElementById('print-btn').style.display = 'block';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    function imprimir() {
+        let contenido = document.getElementById('barcode-area').innerHTML;
+        let ventana = window.open('', '_blank', 'width=800,height=600');
+        ventana.document.write('<html><head><title>Imprimir Código</title></head><body>');
+        ventana.document.write(contenido);
+        ventana.document.write('</body></html>');
+        ventana.document.close();
+        ventana.print();
+    }
+</script>
+
+</body>
+</html>

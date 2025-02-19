@@ -1,0 +1,18 @@
+{
+    "name": "usuario/barcode-generator",
+    "version": "1.0.0",
+    "description": "Generador de codigos de barra en PHP",
+    "autoload": {
+        "psr-4": {
+            "Usuario\\BarcodeGenerator\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "David Camarillo Tristan"
+        }
+    ],
+    "require": {
+        "picqer/php-barcode-generator": "^2.4"
+    }
+}
